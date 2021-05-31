@@ -16,11 +16,11 @@ module.exports = () => {
     student = req.body;
 
     Student.create(student)
-      .then((data) => {
+      .then((students) => {
         res.json({
           code: status.OK,
           msg: "Se insertó correctamente",
-          data: data,
+          data: students,
         });
       })
       .catch((err) => {
@@ -38,12 +38,12 @@ module.exports = () => {
     const controlnumber = req.params.controlnumber;
 
     Student.findOneAndDelete({ controlnumber: controlnumber })
-      .then((data) => {
-        if (data)
+      .then((students) => {
+        if (students)
           res.json({
             code: status.OK,
             msg: "Se eliminó correctamente",
-            data: data,
+            data: students,
           });
         else
           res.status(status.NOT_FOUND).json({
@@ -64,11 +64,11 @@ module.exports = () => {
   // ? Consulta general de estudiantes
   router.get("/", (req, res) => {
     Student.find({})
-      .then((data) => {
+      .then((students) => {
         res.json({
           code: status.OK,
           msg: "Consulta correcta",
-          data: data,
+          data: students,
         });
       })
       .catch((err) => {
@@ -115,11 +115,11 @@ module.exports = () => {
     Student.findOneAndUpdate({ controlnumber: controlnumber }, student, {
       new: true,
     })
-      .then((data) => {
+      .then((students) => {
         res.json({
           code: status.OK,
           msg: "Se actualizó correctamente",
-          data: data,
+          data: students,
         });
       })
       .catch((err) => {
@@ -134,42 +134,43 @@ module.exports = () => {
   });
 
   // ? Estadistica de estudiantes hombres y mujeres
-  router.post("/getMaleAndFemaleByCareer", (req, res) => {
+  router.post("/getMaleAndFemaleByCareer/", (req, res) => {
     Student.find({})
-      .then((data) => {
-        ISCh = 0;
-        ISCm = 0;
-        IMh = 0;
-        IMm = 0;
-        IGEh = 0;
-        IGEm = 0;
-        ICh = 0;
-        ICm = 0;
+      .then((students) => {
+        careers = {
+          ISC: { Hombres: 0, Mujeres: 0 },
+          IM: { Hombres: 0, Mujeres: 0 },
+          IGE: { Hombres: 0, Mujeres: 0 },
+          IC: { Hombres: 0, Mujeres: 0 },
+        };
 
-        data.forEach((student, i) => {
-          if (data[i].career === "ISC") {
-            [...data[i].curp][10] === "M" ? ISCm++ : ISCh++;
+        students.forEach((student) => {
+          if (student.career === "ISC") {
+            [...student.curp][10] === "M"
+              ? careers.ISC.Mujeres++
+              : careers.ISC.Hombres++;
           }
-          if (data[i].career === "IM") {
-            [...data[i].curp][10] === "M" ? IMm++ : IMh++;
+          if (student.career === "IM") {
+            [...student.curp][10] === "M"
+              ? careers.IM.Mujeres++
+              : careers.IM.Hombres++;
           }
-          if (data[i].career === "IGE") {
-            [...data[i].curp][10] === "M" ? IGEm++ : IGEh++;
+          if (student.career === "IGE") {
+            [...student.curp][10] === "M"
+              ? careers.IGE.Mujeres++
+              : careers.IGE.Hombres++;
           }
-          if (data[i].career === "IC") {
-            [...data[i].curp][10] === "M" ? ICm++ : ICh++;
+          if (student.career === "IC") {
+            [...student.curp][10] === "M"
+              ? careers.IC.Mujeres++
+              : careers.IC.Hombres++;
           }
         });
 
         res.json({
           code: status.OK,
           msg: "Consulta correcta",
-          data: [
-            ["ISC", ["Mujeres: " + ISCm, "Hombres: " + ISCh]],
-            ["IM", ["Mujeres: " + IMm, "Hombres: " + IMh]],
-            ["IGE", ["Mujeres: " + IGEm, "Hombres: " + IGEh]],
-            ["IC", ["Mujeres: " + ICm, "Hombres: " + ICh]],
-          ],
+          data: careers,
         });
       })
       .catch((err) => {
@@ -183,46 +184,43 @@ module.exports = () => {
   });
 
   // ? Estadistica de estudiantes foraneos
-  router.post("/getForaneosByCareer", (req, res) => {
+  router.post("/getForaneosByCareer/", (req, res) => {
     Student.find({})
-      .then((data) => {
-        isc = 0;
-        im = 0;
-        ige = 0;
-        ic = 0;
+      .then((students) => {
+        careers = {
+          ISC: { Foraneos: 0 },
+          IM: { Foraneos: 0 },
+          IGE: { Foraneos: 0 },
+          IC: { Foraneos: 0 },
+        };
 
-        data.forEach((student, i) => {
-          if (data[i].career === "ISC") {
-            [...data[i].curp][11] === "N" && [...data[i].curp][12] === "T"
+        students.forEach((student) => {
+          if (student.career === "ISC") {
+            [...student.curp][11] === "N" && [...student.curp][12] === "T"
               ? null
-              : isc++;
+              : careers.ISC.Foraneos++;
           }
-          if (data[i].career === "IM") {
-            [...data[i].curp][11] === "N" && [...data[i].curp][12] === "T"
+          if (student.career === "IM") {
+            [...student.curp][11] === "N" && [...student.curp][12] === "T"
               ? null
-              : im++;
+              : careers.IM.Foraneos++;
           }
-          if (data[i].career === "IGE") {
-            [...data[i].curp][11] === "N" && [...data[i].curp][12] === "T"
+          if (student.career === "IGE") {
+            [...student.curp][11] === "N" && [...student.curp][12] === "T"
               ? null
-              : ige++;
+              : careers.IGE.Foraneos++;
           }
-          if (data[i].career === "IC") {
-            [...data[i].curp][11] === "N" && [...data[i].curp][12] === "T"
+          if (student.career === "IC") {
+            [...student.curp][11] === "N" && [...student.curp][12] === "T"
               ? null
-              : ic++;
+              : careers.IC.Foraneos++;
           }
         });
 
         res.json({
           code: status.OK,
           msg: "Consulta correcta",
-          data: [
-            ["ISC", ["Foraneos: " + isc]],
-            ["IM", ["Foraneos: " + im]],
-            ["IGE", ["Foraneos: " + ige]],
-            ["IC", ["Foraneos: " + ic]],
-          ],
+          data: careers,
         });
       })
       .catch((err) => {
@@ -236,42 +234,35 @@ module.exports = () => {
   });
 
   // ? Estadistica de estudiantes aprobados
-  router.post("/getAprobadosByCareer", (req, res) => {
+  router.post("/getAprobadosByCareer/", (req, res) => {
     Student.find({})
-      .then((data) => {
-        iscA = 0;
-        imA = 0;
-        igeA = 0;
-        icA = 0;
-        iscR = 0;
-        imR = 0;
-        igeR = 0;
-        icR = 0;
+      .then((students) => {
+        careers = {
+          ISC: { Aprobados: 0 },
+          IM: { Aprobados: 0 },
+          IGE: { Aprobados: 0 },
+          IC: { Aprobados: 0 },
+        };
 
-        data.forEach((student, i) => {
-          if (data[i].career === "ISC") {
-            data[i].grade >= 70 ? iscA++ : iscR++;
+        students.forEach((student) => {
+          if (student.career === "ISC") {
+            student.grade >= 70 ? careers.ISC.Aprobados++ : null;
           }
-          if (data[i].career === "IM") {
-            data[i].grade >= 70 ? imA++ : imR++;
+          if (student.career === "IM") {
+            student.grade >= 70 ? careers.IM.Aprobados++ : null;
           }
-          if (data[i].career === "IGE") {
-            data[i].grade >= 70 ? igeA++ : igeR++;
+          if (student.career === "IGE") {
+            student.grade >= 70 ? careers.IGE.Aprobados++ : null;
           }
-          if (data[i].career === "IC") {
-            data[i].grade >= 70 ? icA++ : icR++;
+          if (student.career === "IC") {
+            student.grade >= 70 ? careers.IC.Aprobados++ : null;
           }
         });
 
         res.json({
           code: status.OK,
           msg: "Consulta correcta",
-          data: [
-            ["ISC", ["Aprobados: " + iscA, "Reprobados: " + iscR]],
-            ["IM", ["Aprobados: " + imA, "Reprobados: " + imR]],
-            ["IGE", ["Aprobados: " + igeA, "Reprobados: " + igeR]],
-            ["IC", ["Aprobados: " + icA, "Reprobados: " + icR]],
-          ],
+          data: careers,
         });
       })
       .catch((err) => {
@@ -285,62 +276,43 @@ module.exports = () => {
   });
 
   // ? Estadistica de estudiantes mayores de edad
-  router.post("/getMayoresDeEdadByCareer", (req, res) => {
+  router.post("/getMayoresDeEdadByCareer/", (req, res) => {
     Student.find({})
-      .then((data) => {
-        iscMenor = 0;
-        iscMayor = 0;
-        imMenor = 0;
-        imMayor = 0;
-        igeMenor = 0;
-        igeMayor = 0;
-        icMenor = 0;
-        icMayor = 0;
+      .then((students) => {
+        careers = {
+          ISC: { Mayores_de_edad: 0, Menores_de_edad: 0 },
+          IM: { Mayores_de_edad: 0, Menores_de_edad: 0 },
+          IGE: { Mayores_de_edad: 0, Menores_de_edad: 0 },
+          IC: { Mayores_de_edad: 0, Menores_de_edad: 0 },
+        };
 
-        data.forEach((student, i) => {
-          if (data[i].career === "ISC") {
-            [...data[i].curp][4] === "0" && parseInt([...data[i].curp][5]) > 3
-              ? iscMenor++
-              : iscMayor++;
+        students.forEach((student) => {
+          if (student.career === "ISC") {
+            [...student.curp][4] === "0" && parseInt([...student.curp][5]) > 3
+              ? careers.ISC.Menores_de_edad++
+              : careers.ISC.Mayores_de_edad++;
           }
-          if (data[i].career === "IM") {
-            [...data[i].curp][4] === "0" && parseInt([...data[i].curp][5]) > 3
-              ? imMenor++
-              : imMayor++;
+          if (student.career === "IM") {
+            [...student.curp][4] === "0" && parseInt([...student.curp][5]) > 3
+              ? careers.IM.Menores_de_edad++
+              : careers.IM.Mayores_de_edad++;
           }
-          if (data[i].career === "IGE") {
-            [...data[i].curp][4] === "0" && parseInt([...data[i].curp][5]) > 3
-              ? igeMenor++
-              : igeMayor++;
+          if (student.career === "IGE") {
+            [...student.curp][4] === "0" && parseInt([...student.curp][5]) > 3
+              ? careers.IGE.Menores_de_edad++
+              : careers.IGE.Mayores_de_edad++;
           }
-          if (data[i].career === "IC") {
-            [...data[i].curp][4] === "0" && parseInt([...data[i].curp][5]) > 3
-              ? icMenor++
-              : icMayor++;
+          if (student.career === "IC") {
+            [...student.curp][4] === "0" && parseInt([...student.curp][5]) > 3
+              ? careers.IC.Menores_de_edad++
+              : careers.IC.Mayores_de_edad++;
           }
         });
 
         res.json({
           code: status.OK,
           msg: "Consulta correcta",
-          data: [
-            [
-              "ISC",
-              ["Mayores de edad: " + iscMayor, "Menores de edad: " + iscMenor],
-            ],
-            [
-              "IM",
-              ["Mayores de edad: " + imMayor, "Menores de edad: " + imMenor],
-            ],
-            [
-              "IGE",
-              ["Mayores de edad: " + igeMayor, "Menores de edad: " + igeMenor],
-            ],
-            [
-              "IC",
-              ["Mayores de edad: " + icMayor, "Menores de edad: " + icMenor],
-            ],
-          ],
+          data: careers,
         });
       })
       .catch((err) => {
